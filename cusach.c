@@ -433,6 +433,7 @@ typedef struct Bullet {
 	float bx, by;
 	float bdx, bdy;
 	float bsize;
+	int NumStolb;
 } Bullet;
 
 typedef struct meteoritq
@@ -472,6 +473,7 @@ void Bullet_Init(Bullet* obj, float bsize1) // помещает пулю в корабль, чтобы он
 	obj->bx = ship.x;
 	obj->by = ship.y;
 	obj->bsize = bsize1;
+	obj->NumStolb = ((obj->bx + 1) / 0.22);
 }
 
 void meteorHealthInit(meteoritHealth* metH) // задает координаты метеориту со здоровьем
@@ -527,7 +529,6 @@ void Bullet_Move(Bullet* obj) // перемещает пулю
 
 	if (obj->by > 1)
 	{
-		//Bullet_Init(&obj, 0.05);
 		obj->bx = 3;
 	}
 }
