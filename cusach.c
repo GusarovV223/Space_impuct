@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 #pragma comment(lib, "opengl32.lib")
+unsigned long long kadrs = 0;
+unsigned long long kadrs__for_shot = 0;
 int sbrosGameOver = 0;
 int width = 850;
 int high = 850;
@@ -24,8 +26,8 @@ void show_Heatlh3();
 void show_Heatlh2();
 void show_Heatlh1();
 int MAXscore = 0;
+int flag_game_over = 0;
 FILE* Leaders;
-
 
 
 
@@ -422,6 +424,7 @@ void showDopsaHealth(float x, float y);
 
 
 
+
 typedef struct Space_Ship {
 	float x, y;
 	float dx, dy;
@@ -495,7 +498,7 @@ void Space_Ship_Show(Space_Ship obj) // отрисовывет корабль на каждом кадре
 short checkGameOver(meteorit meteor) // проверяет столкновение корабля с метеоритом
 {
 	if (((ship.y + 0.25) >= (meteor.my - 0.1 + 0.95)) && (ship.y + 0.25 <= (meteor.my + 0.1 + 0.95)))
-		if ((ship.x + 0.15 >= meteor.mx - 0.11) && (ship.x - 0.05 <= meteor.mx + 0.11))
+		if ((ship.x + 0.13 >= meteor.mx - 0.11) && (ship.x - 0.08 <= meteor.mx + 0.11))
 			return 0;
 	return 1;
 }
@@ -513,8 +516,6 @@ void Space_Ship_Move(Space_Ship* obj, char left, char right, char shot, float wl
 	if (GetKeyState(left) < 0)obj->x -= speed;
 	else if (GetKeyState(right) < 0)obj->x += speed;
 
-
-
 	if (obj->x - (obj->size) < wl1)
 		obj->x = wl1 + (obj->size);
 	if (obj->x + obj->size + 0.05 > wl2)
@@ -522,6 +523,8 @@ void Space_Ship_Move(Space_Ship* obj, char left, char right, char shot, float wl
 
 
 }
+
+
 void Bullet_Move(Bullet* obj) // перемещает пулю
 {
 	static float speed = 0.025;
@@ -534,7 +537,6 @@ void Bullet_Move(Bullet* obj) // перемещает пулю
 }
 void move_meteorHealth(meteoritHealth* meteorH) // перемещает юонусные метеорит
 {
-
 	meteorH->my = meteorH->my - speed_meteor;
 	glPushMatrix();
 	glTranslatef(0.0, meteorH->my, 0.0);
@@ -548,6 +550,8 @@ LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
 void meteorInit(meteorit* met);
+
+
 void move_meteorit(meteorit* meteor);
 void show_meteorit(float x, float y);
 void showGameOver();
@@ -567,6 +571,7 @@ void show_score_8();
 void show_score_9();
 void show_score_0();
 void check_leaders();
+Bullet bull_array[10];
 
 int WINAPI WinMain(HINSTANCE hInstance,
 	HINSTANCE hPrevInstance,
@@ -635,13 +640,12 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	float corY = -1000;
 	int index;
 	int cadr = 0;
-	int flag = 0;
 	int array_score[4];
 	for (int i = 0; i < 4; i++)
 		array_score[i] = 0;
 	i = rand();
 	srand(i);
-	Bullet bull_array[10];
+
 	for (j = 0; j < 10; j++)
 	{
 		bull_array[j].bx = 3;
@@ -650,9 +654,10 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	//glLoadIdentity();
 	//srand(time(NULL));
 
-
+	srand(1);  //нужно добавить перед каждым meteorInit для одинаковой генерации
 	for (i = 0; i < 50; i++)
 	{
+
 		meteorInit(&meteor_array[i]);
 		meteor_array[i].my = meteor_array[i].my + i * 0.2;
 	}
@@ -663,6 +668,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	Space_Ship_Init(&ship, 0, -0.9, 0.1);
 	read_leaders();
+	void IIgame(Space_Ship * obj);
 
 
 	int Myseed = rand();
@@ -723,6 +729,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 				}
 				if (flagstart == 1)                // если нажали на кнопку старт (запускается игра)
 				{
+					kadrs++; //кадров с момента начала игры 
 					/* OpenGL animation code goes here */
 					glClearColor(0.1f, 0.1f, 0.18f, 0.0f);
 					glClear(GL_COLOR_BUFFER_BIT);
@@ -777,7 +784,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					// закончили рисвоать (удалить)
 
 
-					if ((flag == 1) && (sbrosGameOver < 3000)) //показываем окно проигрыша
+					if ((flag_game_over == 1) && (sbrosGameOver < 3000)) //показываем окно проигрыша
 					{
 
 						glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -790,10 +797,11 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					}
 					if (sbrosGameOver == 3000)   // прошло 3000 кадров и закончили показ окна проигрыша, обнулили исходные переменные 
 					{
-						flag = 0;
+						flag_game_over = 0;
 						flagstart = 0;
 						sbrosGameOver = 0;
 						count = 0;
+						kadrs = 0;
 						Health = 3;
 						NUMLVL = 1;
 						numLVL(yLVL);
@@ -801,6 +809,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						score = 0;
 						meteorHealthInit(&meteorH);
 						Space_Ship_Init(&ship, -0.1, -0.9, 0.1);
+						srand(1); // для одинаковой генерации метеоритов
 						for (i = 0; i < 50; i++)
 						{
 							meteorInit(&meteor_array[i]);
@@ -830,23 +839,26 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					Show_LVLE(yLVL);
 					numLVL(yLVL);
 
+					IIgame(&ship); // функия движения ИИ 
+
 
 					Space_Ship_Move(&ship, 'A', 'D', 'W', -1, 1);
 					move_meteorHealth(&meteorH);
-
 					Space_Ship_Show(ship);
 					k++;
 					for (j = 0; j < 10; j++)
 					{
+
 						if ((GetKeyState('W') < 0) && (bull_array[j].bx == 3) && k > 12)
 						{
 							Bullet_Init(&bull_array[j], 0.05);
 							k = 0;
 							break;
-							//Bullet_Move(&Bull);
-							//Bullet_Show(Bull, ship);
 						}
 					}
+
+					// IIgame(&ship, -1, 1);
+
 					for (j = 0; j < 10; j++)
 					{
 						if (bull_array[j].bx != 3)
@@ -896,7 +908,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 							Health--;
 							if (Health == 0)
 							{
-								flag = 1;
+								flag_game_over = 1;
 								check_leaders();
 								break;
 							}
@@ -909,9 +921,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						meteorHealthInit(&meteorH);
 					}
 
-					//move_meteorit(&meteor_array[0]);
-					//for (t=0;t<10;t++)
-					//shootCheck(&bull_array[t], &meteor_array[0]);
 					h = 0;
 
 					for (t = 0; t < 10; t++)
@@ -939,6 +948,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					}
 					if (count == 50)
 					{
+						srand(1);
 						for (i = 0; i < 50; i++)
 						{
 							meteorInit(&meteor_array[i]);
@@ -1132,6 +1142,9 @@ void meteorInit(meteorit* met)
 	met->my = 0.2;
 	met->msize = 0.2 / 5;
 }
+
+
+
 void move_meteorit(meteorit* meteor)
 {
 
@@ -2899,4 +2912,89 @@ void showDopsaHealth(float x, float y)
 
 	glEnd();
 	glPopMatrix();
+}
+
+
+
+void IIgame(Space_Ship* obj)
+{
+	static float speed = 0.02;
+
+	if (kadrs < 45)
+	{
+		obj->x += speed;
+	}
+	else if ((kadrs > 55) && (kadrs < 135))
+	{
+		obj->x -= speed;
+	}
+	else if ((kadrs > 135) && (kadrs < 200))
+	{
+		obj->x + speed;
+	}
+	else if ((kadrs > 210) && (kadrs < 215))
+	{
+		obj->x -= speed;
+	}
+	else if ((kadrs > 250) && (kadrs < 280))
+	{
+		obj->x += speed;
+
+	}
+	else if ((kadrs > 310) && (kadrs < 323))
+	{
+		obj->x += speed;
+
+	}
+	else if ((kadrs > 360) && (kadrs < 372))
+	{
+		obj->x -= speed;
+
+	}
+	else if ((kadrs > 390) && (kadrs < 410))
+	{
+		obj->x += speed;
+
+	}
+	else if ((kadrs > 460) && (kadrs < 502))
+	{
+		obj->x -= speed;
+
+	}
+	else if ((kadrs > 530) && (kadrs < 549))
+	{
+		obj->x += speed;
+
+	}
+	else if ((kadrs > 567) && (kadrs < 599))
+	{
+		obj->x -= speed;
+
+	}
+	else if ((kadrs > 630) && (kadrs < 674))
+	{
+		obj->x += speed;
+
+	}
+	kadrs__for_shot++;
+	if (kadrs < 675)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			if ((bull_array[j].bx == 3) && (kadrs__for_shot > 25))
+			{
+				Bullet_Init(&bull_array[j], 0.05);
+				kadrs__for_shot = 0;
+				break;
+			}
+		}
+	}
+	if (kadrs == 685)
+	{
+		Health = 0;
+		flag_game_over = 1;
+	}
+
+
+
 }
