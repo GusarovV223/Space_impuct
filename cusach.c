@@ -28,7 +28,8 @@ void show_Heatlh1();
 int MAXscore = 0;
 int flag_game_over = 0;
 FILE* Leaders;
-
+int array_of_heads[9];
+int number_of_meteorits_in_each_stolb[9];
 
 
 
@@ -549,7 +550,7 @@ void move_meteorHealth(meteoritHealth* meteorH) // перемещает юонусные метеорит
 LRESULT CALLBACK WindowProc(HWND, UINT, WPARAM, LPARAM);
 void EnableOpenGL(HWND hwnd, HDC*, HGLRC*);
 void DisableOpenGL(HWND, HDC, HGLRC);
-void meteorInit(meteorit* met);
+int meteorInit(meteorit* met);
 
 
 void move_meteorit(meteorit* meteor);
@@ -629,7 +630,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	//Liders = fopen("C: / Users / gusar / Desktop / Liders.txt", "r");
 	meteorit* tmp1;
-	meteorit meteor_array[50];
+	meteorit meteor_array_init[50];
+	meteorit meteor_array[9][10];
 	int i = 0;
 	int j = 0;
 	int k = 0;
@@ -641,11 +643,17 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	int index;
 	int cadr = 0;
 	int array_score[4];
+	int stolb = 0;
 	for (int i = 0; i < 4; i++)
 		array_score[i] = 0;
 	i = rand();
 	srand(i);
+	for (int i = 0; i < 9; i++)
+	{
+		number_of_meteorits_in_each_stolb[i] = 0;
+		array_of_heads[i] = 0;
 
+	}
 	for (j = 0; j < 10; j++)
 	{
 		bull_array[j].bx = 3;
@@ -658,9 +666,14 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	for (i = 0; i < 50; i++)
 	{
 
-		meteorInit(&meteor_array[i]);
-		meteor_array[i].my = meteor_array[i].my + i * 0.2;
+		stolb = meteorInit(&meteor_array_init[i]);
+		meteor_array_init[i].my = meteor_array_init[i].my + i * 0.2;
+		meteor_array[stolb][number_of_meteorits_in_each_stolb[stolb]] = meteor_array_init[i];
+		number_of_meteorits_in_each_stolb[stolb]++;
 	}
+
+	srand(1);
+
 
 	meteorHealthInit(&meteorH);
 
@@ -812,8 +825,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						srand(1); // для одинаковой генерации метеоритов
 						for (i = 0; i < 50; i++)
 						{
-							meteorInit(&meteor_array[i]);
-							meteor_array[i].my = meteor_array[i].my + i * 0.2;
+							meteorInit(&meteor_array_init[i]);
+							meteor_array_init[i].my = meteor_array_init[i].my + i * 0.2;
 						}
 						speed_meteor = 0.009;
 						continue;
@@ -896,24 +909,25 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						glTranslatef(-0.1, 0.0, 0.0);
 					}
 					glPopMatrix();
-					for (h = 0; h < 50; h++)
-					{
-						i = rand();
-						srand(i);
 
-						move_meteorit(&meteor_array[h]);
-						if (checkGameOver(meteor_array[h]) == 0)
+					for (int i = 0; i < 9; i++)
+						for (int j = 0; j < number_of_meteorits_in_each_stolb[i]; j++)
 						{
-							meteor_array[h].my = 2;
-							Health--;
-							if (Health == 0)
+
+
+							move_meteorit(&(meteor_array[i][j]));
+							if (checkGameOver(meteor_array[i][j]) == 0)
 							{
-								flag_game_over = 1;
-								check_leaders();
-								break;
+								meteor_array[i][j].my = 2;
+								Health--;
+								if (Health == 0)
+								{
+									flag_game_over = 1;
+									check_leaders();
+									break;
+								}
 							}
 						}
-					}
 					if ((checkHealth(meteorH)) == 0)
 					{
 						if (Health < 3)
@@ -923,18 +937,26 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 					h = 0;
 
+
 					for (t = 0; t < 10; t++)
-						for (d = 0; d < 50; d++)
+					{
+						for (int i = 0; i < 9; i++)
 						{
-							tmp1 = shootCheck(&bull_array[t], &meteor_array[d]);
-							if (tmp1->mx != -1000)
+							for (int j = 0; j < number_of_meteorits_in_each_stolb[i]; j++)
 							{
-								corX = tmp1->mx;
-								corY = tmp1->my;
 
+								tmp1 = shootCheck(&bull_array[t], &meteor_array[i][j]);
+								if (tmp1->mx != -1000)
+								{
+									corX = tmp1->mx;
+									corY = tmp1->my;
+
+								}
 							}
-
 						}
+					}
+
+
 					if (cadr < 80 && corX != -1000)
 					{
 						showAnimation(corX, corY + 0.9);
@@ -951,8 +973,8 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						srand(1);
 						for (i = 0; i < 50; i++)
 						{
-							meteorInit(&meteor_array[i]);
-							meteor_array[i].my = meteor_array[i].my + i * 0.2;
+							meteorInit(&meteor_array_init[i]);
+							meteor_array_init[i].my = meteor_array_init[i].my + i * 0.2;
 						}
 						meteorHealthInit(&meteorH);
 						count = 0;
@@ -1132,7 +1154,7 @@ void DisableOpenGL(HWND hwnd, HDC hDC, HGLRC hRC)
 	ReleaseDC(hwnd, hDC);
 }
 
-void meteorInit(meteorit* met)
+int meteorInit(meteorit* met)
 {
 	int j = rand() % 9;
 	float result = 0.11;
@@ -1141,6 +1163,7 @@ void meteorInit(meteorit* met)
 	met->mx = result;
 	met->my = 0.2;
 	met->msize = 0.2 / 5;
+	return j;
 }
 
 
