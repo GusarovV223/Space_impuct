@@ -553,13 +553,13 @@ void DisableOpenGL(HWND, HDC, HGLRC);
 int meteorInit(meteorit* met);
 
 
-void move_meteorit(meteorit* meteor);
+void move_meteorit(meteorit* meteor, int index);
 void show_meteorit(float x, float y);
 void showGameOver();
 void show_meteor(float x, float y);
 void showDopsaHealth(float x, float y);
 void showAnimation(float x, float y);
-meteorit* shootCheck(Bullet* bull, meteorit* meteor);
+meteorit* shootCheck(Bullet* bull, meteorit* meteor, int index);
 void take_digitals(int* array);
 void show_score_1();
 void show_score_2();
@@ -915,10 +915,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						{
 
 
-							move_meteorit(&(meteor_array[i][j]));
-							if (checkGameOver(meteor_array[i][j]) == 0)
+							move_meteorit(&(meteor_array[i][j]), i);
+
+
+						}
+					for (int i = 0; i < 9; i++)
+					{
+						if (array_of_heads[i] < number_of_meteorits_in_each_stolb[i])
+						{
+
+							if (checkGameOver(meteor_array[i][array_of_heads[i]]) == 0)
 							{
-								meteor_array[i][j].my = 2;
+								meteor_array[i][array_of_heads[i]].my = 100;
 								Health--;
 								if (Health == 0)
 								{
@@ -928,6 +936,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 								}
 							}
 						}
+					}
 					if ((checkHealth(meteorH)) == 0)
 					{
 						if (Health < 3)
@@ -938,7 +947,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					h = 0;
 
 
-					for (t = 0; t < 10; t++)
+					/*for (t = 0; t < 10; t++)
 					{
 						for (int i = 0; i < 9; i++)
 						{
@@ -953,6 +962,23 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 								}
 							}
+						}
+					}*/
+					for (t = 0; t < 10; t++)
+					{
+						for (int i = 0; i < 9; i++)
+						{
+
+
+
+							tmp1 = shootCheck(&bull_array[t], &meteor_array[i][array_of_heads[i]], i);
+							if (tmp1->mx != -1000)
+							{
+								corX = tmp1->mx;
+								corY = tmp1->my;
+
+							}
+
 						}
 					}
 
@@ -1168,7 +1194,7 @@ int meteorInit(meteorit* met)
 
 
 
-void move_meteorit(meteorit* meteor)
+void move_meteorit(meteorit* meteor, int index)
 {
 
 	meteor->my = meteor->my - speed_meteor;
@@ -1176,7 +1202,13 @@ void move_meteorit(meteorit* meteor)
 	{
 		meteor->mx = 3;
 		meteor->my = 100;
+		array_of_heads[index]++;
 		count++;
+		return;
+	}
+	if (meteor->my > 50.0)
+	{
+		return;
 	}
 	glPushMatrix();
 	glTranslatef(0.0, meteor->my + 0.9, 0.0);
@@ -1433,7 +1465,7 @@ void show_meteor(float x, float y)
 }   //
 
 
-meteorit* shootCheck(Bullet* bull, meteorit* meteor)
+meteorit* shootCheck(Bullet* bull, meteorit* meteor, int index)
 {
 	meteorit* tmp = (meteorit*)malloc(sizeof(meteorit));
 
@@ -1447,6 +1479,7 @@ meteorit* shootCheck(Bullet* bull, meteorit* meteor)
 			tmp->my = meteor->my;
 			meteor->mx = 3;
 			meteor->my = 100;
+			array_of_heads[index]++;
 			count++;
 			score++;
 			return tmp;
