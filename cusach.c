@@ -657,7 +657,6 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	srand(1);  //нужно добавить перед каждым meteorInit для одинаковой генерации
 	for (i = 0; i < 50; i++)
 	{
-
 		meteorInit(&meteor_array[i]);
 		meteor_array[i].my = meteor_array[i].my + i * 0.2;
 	}
