@@ -2992,7 +2992,7 @@ int IIgame(Space_Ship* obj)
 
 	}
 	kadrs__for_shot++;
-	if (kadrs < 675)
+	if (kadrs < 1200)
 	{
 		for (int j = 0; j < 10; j++)
 		{
@@ -3004,7 +3004,7 @@ int IIgame(Space_Ship* obj)
 			}
 		}
 	}
-	if (kadrs == 685)
+	if (kadrs == 1200)
 	{
 		Health = 0;
 		flag_game_over = 1;
