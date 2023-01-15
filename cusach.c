@@ -885,9 +885,20 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 					// вынос инварианта из цикла 
 
+					__asm {
+						mov eax, 7;
+						mov ebx, speed_meteor;
+						imul eax, ebx;
+						mov xsev, eax;
 
-					xsev = (7 * speed_meteor);
-					xtwen = (0.025 + speed_meteor);
+						//xtwen = (0.025 + speed_meteor);
+
+
+						mov eax, 0.025;
+						mov ebx, speed_meteor;
+						add eax, ebx;
+						mov xtwen, eax;
+					}
 
 
 					for (j = 0; j < 6; j++)
@@ -3129,8 +3140,28 @@ int IIgame(Space_Ship* obj)
 	kadrs__for_shot++;
 	if (kadrs < 1200)
 	{
-		xsev = (7 * speed_meteor);
-		xtwen = (0.025 + speed_meteor);
+		__asm {
+			//xsev = (7 * speed_meteor);
+
+
+			mov eax, 7;
+			mov ebx, speed_meteor;
+			imul eax, ebx;
+			mov xsev, eax;
+
+			//xtwen = (0.025 + speed_meteor);
+
+
+			mov eax, 0.025;
+			mov ebx, speed_meteor;
+			add eax, ebx;
+			mov xtwen, eax;
+
+
+
+
+
+		}
 		for (int j = 0; j < 6; j++)
 		{
 			if ((bull_array[j].bx == 3) && (kadrs__for_shot > 25))
