@@ -36,6 +36,8 @@ int array_of_heads[9];
 int number_of_meteorits_in_each_stolb[9];
 float xsev;
 float xtwen;
+float xasmtwen = 0.025;
+float xasmsev = 7;
 
 
 
@@ -485,7 +487,7 @@ void Space_Ship_Init(Space_Ship* obj, float x1, float y1, float size1) // ��
 }
 void Bullet_Init(Bullet* obj, float bsize1) // �������� ���� � �������, ����� ��� �� ���� ��������
 {
-	obj->bx = ship.x;
+	obj->bx = ship.x + 0.025;
 	obj->by = ship.y;
 	obj->bsize = bsize1;
 	obj->NumStolb = ((obj->bx + 1) / 0.22);
@@ -520,7 +522,7 @@ void Bullet_Show(Bullet obj, Space_Ship object) // ����������
 {
 	glPushMatrix();
 	glColor3f(1.0, 1.0, 0.0);
-	ShowQ(obj.bx, obj.by + (0.25), 0.05);
+	ShowQ((obj.bx) - 0.025, obj.by + (0.25), 0.05);
 	glPopMatrix();
 }
 
@@ -794,6 +796,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						flag_game_over = 0;
 						flagstart = 0;
 						sbrosGameOver = 0;
+						kadrs_for_ii = 0;
 						count = 0;
 						kadrs = 0;
 						Health = 3;
@@ -860,8 +863,18 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					// вынос инварианта из цикла 
 
 
-					xsev = (7 * speed_meteor);
-					xtwen = (0.025 + speed_meteor);
+					//xsev = (7 * speed_meteor);
+					//xtwen = (0.025 + speed_meteor);
+
+					__asm {
+						movss xmm0, speed_meteor
+						addss      xmm0, xasmtwen
+						movss      xtwen, xmm0
+
+						movss xmm0, speed_meteor
+						mulss      xmm0, xasmsev
+						movss      xsev, xmm0
+					}
 
 					Bullet* p;
 
@@ -3101,8 +3114,19 @@ int IIgame(Space_Ship* obj)
 	kadrs__for_shot++;
 	if (kadrs < 2075)
 	{
-		xsev = (7 * speed_meteor);
-		xtwen = (0.025 + speed_meteor);
+		//xsev = (7 * speed_meteor);
+		//xtwen = (0.025 + speed_meteor);
+
+		__asm {
+			movss xmm0, speed_meteor
+			addss      xmm0, xasmtwen
+			movss      xtwen, xmm0
+
+			movss xmm0, speed_meteor
+			mulss      xmm0, xasmsev
+			movss      xsev, xmm0
+		}
+
 		Bullet* p;
 		for (p = &bull_array[0]; p < &bull_array[6]; p++)
 		{
