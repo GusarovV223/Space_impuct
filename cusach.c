@@ -1,4 +1,6 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+﻿
+
+#define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include <gl/gl.h>
 #include<string.h>
@@ -9,6 +11,7 @@
 #pragma comment(lib, "opengl32.lib")
 unsigned long long kadrs = 0;
 unsigned long long kadrs__for_shot = 0;
+unsigned int kadrs_for_ii = 0;
 int sbrosGameOver = 0;
 int width = 850;
 int high = 850;
@@ -21,7 +24,7 @@ char UserName[15];
 Iname = 0;
 float yLVL = 0.9;
 int NUMLVL = 1;
-int Health = 3;
+int Health = 10;
 int score = 0;
 void show_Heatlh3();
 void show_Heatlh2();
@@ -757,6 +760,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 				{
 					if (time_start == 0)
 						time_start = clock();
+					kadrs_for_ii++;
 					kadrs++; //������ � ������� ������ ���� 
 					/* OpenGL animation code goes here */
 					glClearColor(0.1f, 0.1f, 0.18f, 0.0f);
@@ -770,45 +774,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						show_Heatlh1();
 
 					// ������ ��������������� ����� (������� )  
-					glBegin(GL_LINES);
-					glColor3f(0.8, 0, 0);
 
-					glVertex2f(-1, 0);
-					glVertex2f(1, 0);
-
-					glVertex2f(0, 1);
-					glVertex2f(0, -1);
-
-					glColor3f(0.8, 1, 0);
-
-					glVertex2f(-0.778, 1);
-					glVertex2f(-0.778, -1);
-
-					glVertex2f(-0.556, 1);
-					glVertex2f(-0.556, -1);
-
-					glVertex2f(-0.334, 1);
-					glVertex2f(-0.334, -1);
-
-					glVertex2f(-0.112, 1);
-					glVertex2f(-0.112, -1);
-
-					glVertex2f(0.108, 1);
-					glVertex2f(0.108, -1);
-
-					glVertex2f(0.330, 1);
-					glVertex2f(0.330, -1);
-
-					glVertex2f(0.552, 1);
-					glVertex2f(0.552, -1);
-
-					glVertex2f(0.774, 1);
-					glVertex2f(0.774, -1);
-
-					glVertex2f(0.778, 1);
-					glVertex2f(0.778, -1);
-
-					glEnd();
 					// ��������� �������� (�������)
 
 
@@ -837,11 +803,19 @@ int WINAPI WinMain(HINSTANCE hInstance,
 						score = 0;
 						meteorHealthInit(&meteorH);
 						Space_Ship_Init(&ship, -0.1, -0.9, 0.1);
-						srand(1); // ��� ���������� ��������� ����������
+						srand(1);
+						for (int i = 0; i < 9; i++)
+						{
+							number_of_meteorits_in_each_stolb[i] = 0;
+							array_of_heads[i] = 0;
+						}// ��� ���������� ��������� ����������
 						for (i = 0; i < 50; i++)
 						{
-							meteorInit(&meteor_array_init[i]);
+							stolb = meteorInit(&meteor_array_init[i]);
 							meteor_array_init[i].my = meteor_array_init[i].my + i * 0.2;
+							meteor_array[stolb][number_of_meteorits_in_each_stolb[stolb]] = meteor_array_init[i];
+							meteor_array[stolb][number_of_meteorits_in_each_stolb[stolb]].metka = 0;
+							number_of_meteorits_in_each_stolb[stolb]++;
 						}
 						speed_meteor = 0.009;
 						continue;
@@ -870,7 +844,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					if (IIgame(&ship))
 					{
 						time_end = clock();
-						file_time_result = fopen("C:/Users/gusar/Desktop/timer_result.txt", "w");
+						file_time_result = fopen("timer_result.txt", "w+");
 						fprintf(file_time_result, "%.2f", (float)(time_end - time_start) / CLOCKS_PER_SEC);
 						PostQuitMessage(0);
 						bQuit = TRUE;
@@ -885,41 +859,31 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 					// вынос инварианта из цикла 
 
-					__asm {
-						mov eax, 7;
-						mov ebx, speed_meteor;
-						imul eax, ebx;
-						mov xsev, eax;
 
-						//xtwen = (0.025 + speed_meteor);
+					xsev = (7 * speed_meteor);
+					xtwen = (0.025 + speed_meteor);
 
+					Bullet* p;
 
-						mov eax, 0.025;
-						mov ebx, speed_meteor;
-						add eax, ebx;
-						mov xtwen, eax;
-					}
-
-
-					for (j = 0; j < 6; j++)
+					for (p = &bull_array[0]; p < &bull_array[6]; p++)
 					{
-						if ((GetKeyState('W') < 0) && (bull_array[j].bx == 3) && k > 12)
+						if ((GetKeyState('W') < 0) && (p->bx == 3) && k > 12)
 						{
-							Bullet_Init(&bull_array[j], 0.05);
+							Bullet_Init(p, 0.05);
 							k = 0;
-							int tm = array_of_heads[bull_array[j].NumStolb];
+							int tm = array_of_heads[p->NumStolb];
 							index = 0;
-							while ((meteor_array[bull_array[j].NumStolb][tm].metka != 0) && (tm < number_of_meteorits_in_each_stolb[bull_array[j].NumStolb]))
+							while ((meteor_array[p->NumStolb][tm].metka != 0) && (tm < number_of_meteorits_in_each_stolb[p->NumStolb]))
 							{
 								tm++;
 							}
-							if ((tm < number_of_meteorits_in_each_stolb[bull_array[j].NumStolb]) && (meteor_array[bull_array[j].NumStolb][tm].my - (xsev) < 1))
+							if ((tm < number_of_meteorits_in_each_stolb[p->NumStolb]) && (meteor_array[p->NumStolb][tm].my - (xsev) < 1))
 							{
-								bull_array[j].time_to_destruction_bull = kadrs + 1 + ((meteor_array[bull_array[j].NumStolb][tm].my + 0.55 - bull_array[j].by) / (xtwen));
+								p->time_to_destruction_bull = kadrs + 1 + ((meteor_array[p->NumStolb][tm].my + 0.55 - p->by) / (xtwen));
 
-								meteor_array[bull_array[j].NumStolb][tm].time_to_destruction_meteor = bull_array[j].time_to_destruction_bull;
-								meteor_array[bull_array[j].NumStolb][tm].metka = 1;
-								//array_of_heads[bull_array[j].NumStolb]++;
+								meteor_array[p->NumStolb][tm].time_to_destruction_meteor = p->time_to_destruction_bull;
+								meteor_array[p->NumStolb][tm].metka = 1;
+
 								break;
 
 							}
@@ -1042,36 +1006,23 @@ int WINAPI WinMain(HINSTANCE hInstance,
 					h = 0;
 
 
-					/*for (t = 0; t < 6; t++)
+					for (Bullet* p = &bull_array[0]; p < &bull_array[6]; p++)
 					{
-						for (int i = 0; i < 9; i++)
-						{
-							tmp1 = shootCheck(&bull_array[t], &meteor_array[i][array_of_heads[i]], i);
-							if (tmp1->mx != -1000)
-							{
-								corX = tmp1->mx;
-								corY = tmp1->my;
-							}
-
-						}
-					}*/
-					for (int i = 0; i < 6; i++)
-					{
-						if (kadrs == bull_array[i].time_to_destruction_bull)
+						if (kadrs == p->time_to_destruction_bull)
 						{
 							meteorit* tmp = (meteorit*)malloc(sizeof(meteorit));
 							tmp->mx = -1000;
 							tmp->my = -1000;
 
-							bull_array[i].bx = 3;
-							tmp->mx = meteor_array[bull_array[i].NumStolb][array_of_heads[bull_array[i].NumStolb]].mx;
-							tmp->my = meteor_array[bull_array[i].NumStolb][array_of_heads[bull_array[i].NumStolb]].my;
-							meteor_array[bull_array[i].NumStolb][array_of_heads[bull_array[i].NumStolb]].mx = 3;
-							meteor_array[bull_array[i].NumStolb][array_of_heads[bull_array[i].NumStolb]].my = 100;
+							p->bx = 3;
+							tmp->mx = meteor_array[p->NumStolb][array_of_heads[p->NumStolb]].mx;
+							tmp->my = meteor_array[p->NumStolb][array_of_heads[p->NumStolb]].my;
+							meteor_array[p->NumStolb][array_of_heads[p->NumStolb]].mx = 3;
+							meteor_array[p->NumStolb][array_of_heads[p->NumStolb]].my = 100;
 							count++;
 							score++;
-							array_of_heads[bull_array[i].NumStolb]++;
-							bull_array[i].time_to_destruction_bull = 0;
+							array_of_heads[p->NumStolb]++;
+							p->time_to_destruction_bull = 0;
 
 							if (tmp->mx != -1000)
 							{
@@ -1100,11 +1051,19 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 					if (count == 50)
 					{
-						srand(1);
-						for (i = 0; i < 50; i++)
+						for (int i = 0; i < 9; i++)
 						{
-							meteorInit(&meteor_array_init[i]);
+							number_of_meteorits_in_each_stolb[i] = 0;
+							array_of_heads[i] = 0;
+						}
+						srand(1);
+						for (int i = 0; i < 50; i++)
+						{
+							stolb = meteorInit(&meteor_array_init[i]);
 							meteor_array_init[i].my = meteor_array_init[i].my + i * 0.2;
+							meteor_array[stolb][number_of_meteorits_in_each_stolb[stolb]] = meteor_array_init[i];
+							meteor_array[stolb][number_of_meteorits_in_each_stolb[stolb]].metka = 0;
+							number_of_meteorits_in_each_stolb[stolb]++;
 						}
 						meteorHealthInit(&meteorH);
 						count = 0;
@@ -1819,7 +1778,7 @@ void check_leaders(void)
 			break;
 		}
 	}
-	Leaders = fopen("C:/Users/gusar/Desktop/Liders.txt", "w+");
+	Leaders = fopen("C:/Server/Liders.txt", "w+");
 	for (int j = 0; j < 5; j++)
 	{
 		fprintf(Leaders, "%s", chel[j].name);
@@ -3081,113 +3040,95 @@ int IIgame(Space_Ship* obj)
 {
 	static float speed = 0.02;
 
-	if (kadrs < 45)
+	if (kadrs_for_ii < 45)
 	{
 		obj->x += speed;
 	}
-	else if ((kadrs > 55) && (kadrs < 135))
+	else if ((kadrs_for_ii > 55) && (kadrs_for_ii < 135))
 	{
 		obj->x -= speed;
 	}
-	else if ((kadrs > 135) && (kadrs < 200))
+	else if ((kadrs_for_ii > 135) && (kadrs_for_ii < 200))
 	{
 		obj->x + speed;
 	}
-	else if ((kadrs > 210) && (kadrs < 215))
+	else if ((kadrs_for_ii > 210) && (kadrs_for_ii < 215))
 	{
 		obj->x -= speed;
 	}
-	else if ((kadrs > 250) && (kadrs < 280))
+	else if ((kadrs_for_ii > 250) && (kadrs_for_ii < 280))
 	{
 		obj->x += speed;
 
 	}
-	else if ((kadrs > 310) && (kadrs < 323))
+	else if ((kadrs_for_ii > 310) && (kadrs_for_ii < 323))
 	{
 		obj->x += speed;
 
 	}
-	else if ((kadrs > 360) && (kadrs < 372))
-	{
-		obj->x -= speed;
-
-	}
-	else if ((kadrs > 390) && (kadrs < 410))
-	{
-		obj->x += speed;
-
-	}
-	else if ((kadrs > 460) && (kadrs < 502))
+	else if ((kadrs_for_ii > 360) && (kadrs_for_ii < 372))
 	{
 		obj->x -= speed;
 
 	}
-	else if ((kadrs > 530) && (kadrs < 549))
+	else if ((kadrs_for_ii > 390) && (kadrs_for_ii < 410))
 	{
 		obj->x += speed;
 
 	}
-	else if ((kadrs > 567) && (kadrs < 599))
+	else if ((kadrs_for_ii > 460) && (kadrs_for_ii < 502))
 	{
 		obj->x -= speed;
 
 	}
-	else if ((kadrs > 630) && (kadrs < 674))
+	else if ((kadrs_for_ii > 530) && (kadrs_for_ii < 549))
 	{
 		obj->x += speed;
 
 	}
+	else if ((kadrs_for_ii > 567) && (kadrs_for_ii < 599))
+	{
+		obj->x -= speed;
+
+	}
+	else if ((kadrs_for_ii > 630) && (kadrs_for_ii < 674))
+	{
+		obj->x += speed;
+
+	}
+	if (kadrs_for_ii == 675 || kadrs_for_ii == 1350)
+		kadrs_for_ii = 0;
 	kadrs__for_shot++;
-	if (kadrs < 1200)
+	if (kadrs < 2075)
 	{
-		__asm {
-			//xsev = (7 * speed_meteor);
-
-
-			mov eax, 7;
-			mov ebx, speed_meteor;
-			imul eax, ebx;
-			mov xsev, eax;
-
-			//xtwen = (0.025 + speed_meteor);
-
-
-			mov eax, 0.025;
-			mov ebx, speed_meteor;
-			add eax, ebx;
-			mov xtwen, eax;
-
-
-
-
-
-		}
-		for (int j = 0; j < 6; j++)
+		xsev = (7 * speed_meteor);
+		xtwen = (0.025 + speed_meteor);
+		Bullet* p;
+		for (p = &bull_array[0]; p < &bull_array[6]; p++)
 		{
-			if ((bull_array[j].bx == 3) && (kadrs__for_shot > 25))
+			if ((p->bx == 3) && (kadrs__for_shot > 25))
 			{
-				Bullet_Init(&bull_array[j], 0.05);
+				Bullet_Init(p, 0.05);
 				kadrs__for_shot = 0;
-				int tm = array_of_heads[bull_array[j].NumStolb];
-
-				while ((meteor_array[bull_array[j].NumStolb][tm].metka != 0) && (tm < number_of_meteorits_in_each_stolb[bull_array[j].NumStolb]))
+				int tm = array_of_heads[p->NumStolb];
+				while ((meteor_array[p->NumStolb][tm].metka != 0) && (tm < number_of_meteorits_in_each_stolb[p->NumStolb]))
 				{
 					tm++;
 				}
-				if ((tm < number_of_meteorits_in_each_stolb[bull_array[j].NumStolb]) && (meteor_array[bull_array[j].NumStolb][tm].my - (xsev) < 1))
+				if ((tm < number_of_meteorits_in_each_stolb[p->NumStolb]) && (meteor_array[p->NumStolb][tm].my - (xsev) < 1))
 				{
-					bull_array[j].time_to_destruction_bull = kadrs + ((meteor_array[bull_array[j].NumStolb][tm].my + 0.55 - bull_array[j].by) / (speed_meteor + 0.025));
+					p->time_to_destruction_bull = kadrs + 1 + ((meteor_array[p->NumStolb][tm].my + 0.55 - p->by) / (xtwen));
 
-					meteor_array[bull_array[j].NumStolb][tm].time_to_destruction_meteor = bull_array[j].time_to_destruction_bull;
-					meteor_array[bull_array[j].NumStolb][tm].metka = 1;
-					//array_of_heads[bull_array[j].NumStolb]++;
+					meteor_array[p->NumStolb][tm].time_to_destruction_meteor = p->time_to_destruction_bull;
+					meteor_array[p->NumStolb][tm].metka = 1;
+
 					break;
 
 				}
 			}
 		}
 	}
-	if (kadrs == 1200)
+	if (kadrs == 2075)
 	{
 		Health = 0;
 		flag_game_over = 1;
